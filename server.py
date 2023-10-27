@@ -30,6 +30,10 @@ def connect(ip):
     else:
         return False
 
+def getApps(websocket):
+    # get apps
+    pass
+
 # Map directory
 def mapDirectory(path, recursive=False):
     if path == None: path = "c:\\"
