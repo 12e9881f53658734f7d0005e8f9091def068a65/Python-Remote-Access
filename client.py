@@ -18,7 +18,7 @@ async def main(websocket, path):
                 pass
         elif "<MCHNNAME: " in res:
             cmd = input(res.split("<MCHNNAME: ")[1].split(">")[0])
-            await websocket.send(cmd)
+            await websocket.send(f">{cmd}")
 
 asyncEventLoop = get_event_loop()
 startWebSockets = serve(main, "localhost", 8765)

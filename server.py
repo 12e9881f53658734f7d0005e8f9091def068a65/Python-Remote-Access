@@ -134,8 +134,9 @@ while True:
     if res == "cmds":
         getAllCommands(ws)
     elif res in funcMap:
-        # HAVE TO SPLIT UP COMMAND NAME AND ARGS waaaaa
-        funcMap[res](args)
+        s = res.split(">")[0].split()
+        print(s[0], s[1:])
+        funcMap[s[0]](s[1:])
     else:
         ws.send("Command does not exist!")
         endOfTransmission(ws)
