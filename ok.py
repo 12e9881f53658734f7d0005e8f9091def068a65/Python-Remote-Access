@@ -5,7 +5,7 @@ from platform import node
 
 op = os.path
 
-def buildDirectory(path, recursive=False):
+def mapDirectory(path, recursive=False):
     if path == None: path = "c:\\"
 
     try:
@@ -20,7 +20,7 @@ def buildDirectory(path, recursive=False):
 
         if op.isdir(fullItemPath):
             if recursive:
-                dirMap[item] = buildDirectory(fullItemPath, recursive=True)
+                dirMap[item] = mapDirectory(fullItemPath, True)
             else:
                 dirMap[item] = {}
         elif op.isfile(fullItemPath):
@@ -38,17 +38,37 @@ unknown: 2
 # Transfer in binary
 # have to append local path to each file
 
+def uploadFile(websocket, path, readSize=16000000):
+    if not os.path.exists(path): return False
+    # send size of file so that server can tell when data stream is done
+    with open(path, "rb") as f:
+        d = f.read(16000000)
+        while d:
+            websocket.send(d)
+            d = f.read(readSize)
+    
+    print("File sent!")
+
+# TOGO in client
 def rebuildDirectory(localTargetDir, directoryList, recursive=False):
     for item in directoryList:
         joinedItemPath = os.path.join(localTargetDir, item)
-        if type(directoryList[item]) == "set":
-            os.mkdir(item) # have to append local path here
 
+        if type(directoryList[item]) is dict:
+
+            os.mkdir(joinedItemPath) # have to append local path here
             if recursive:
-                rebuildDirectory(joinedItemPath, directoryList, True)
+                rebuildDirectory(joinedItemPath, directoryList[item], True)
+        
         elif directoryList[item] == 1 or directoryList[item] == 2:
-            with open(item, "wb") as file:
+            with open(joinedItemPath, "wb") as file:
                 pass
 
+path = "C:\\Users\\knaro\\OneDrive\\Desktop\\testDir"
 
-print(buildDirectory("C:\\Users\\knaro\\OneDrive\\Desktop\\testDir", True))
+dirMap = {}
+dirMap[os.path.basename(path)] = mapDirectory(path, True)
+
+print(dirMap)
+
+rebuildDirectory(os.path.dirname(os.path.abspath(__file__)), dirMap, True)

