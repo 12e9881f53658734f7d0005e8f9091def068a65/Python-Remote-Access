@@ -1,11 +1,9 @@
-def split_command_string(command_string):
-    parts = command_string.split()
-    if len(parts) > 0:
-        return parts
-    else:
-        return []
+def getsilly(s1, s2):
+    print(s1, s2)
 
-# Example usage:
-input_string = "coolCommand arg1 arg2 arg3"
-result = split_command_string(input_string)
-print(result)
+
+def ok(fn):
+    a = fn.__code__.co_varnames[:fn.__code__.co_argcount]
+    return a
+
+print(ok(getsilly))

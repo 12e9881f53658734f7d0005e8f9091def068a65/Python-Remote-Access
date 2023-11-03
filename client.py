@@ -1,7 +1,7 @@
 from websockets import serve
 from asyncio import get_event_loop
 # THIS IS THE SERVER
-# I SHOULD CONVERT THIS TO BINARY, WHY AM I USING FULL NAMES SOB
+# I SHOULD CONVERT TO BINARY SOB
 connectedMachines = []
 async def main(websocket, path):
     while True:
@@ -17,8 +17,12 @@ async def main(websocket, path):
             except:
                 pass
         elif "<MCHNNAME: " in res:
-            cmd = input(res.split("<MCHNNAME: ")[1].split(">")[0])
+            cmd = input(f"{res.split('<MCHNNAME: ')[1].split('>')[0]}: ")
             await websocket.send(f">{cmd}")
+        else:
+            if res == "\n\n\n\n\nEND":
+                continue
+            print(res)
 
 asyncEventLoop = get_event_loop()
 startWebSockets = serve(main, "localhost", 8765)
